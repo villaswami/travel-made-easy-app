@@ -4,6 +4,7 @@ import Hero from "@/components/Hero";
 import FeaturedTrips from "@/components/FeaturedTrips";
 import PromoSection from "@/components/PromoSection";
 import Footer from "@/components/Footer";
+import AIChatbot from "@/components/AIChatbot";
 
 const Index = () => {
   return (
@@ -15,6 +16,7 @@ const Index = () => {
         <PromoSection />
       </main>
       <Footer />
+      <AIChatbot />
     </div>
   );
 };
