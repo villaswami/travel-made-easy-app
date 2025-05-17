@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { X } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { useToast } from "@/hooks/use-toast";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -17,17 +19,81 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
   
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Login with:", { email, password });
-    // In a real app, this would authenticate with a backend
+    setLoading(true);
+    
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      if (error) {
+        throw error;
+      }
+      
+      toast({
+        title: "Login successful!",
+        description: "Welcome back to TravelGo.",
+      });
+      
+      onClose();
+      console.log("Login successful", data);
+      
+    } catch (error: any) {
+      toast({
+        title: "Login failed",
+        description: error.message || "Please check your credentials and try again.",
+        variant: "destructive",
+      });
+      console.error("Login error:", error);
+      
+    } finally {
+      setLoading(false);
+    }
   };
   
-  const handleSignUp = (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Sign up with:", { name, email, password });
-    // In a real app, this would register a new user
+    setLoading(true);
+    
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: name,
+          }
+        }
+      });
+      
+      if (error) {
+        throw error;
+      }
+      
+      toast({
+        title: "Registration successful!",
+        description: "Please check your email for verification instructions.",
+      });
+      
+      console.log("Signup successful", data);
+      
+    } catch (error: any) {
+      toast({
+        title: "Registration failed",
+        description: error.message || "Please check your information and try again.",
+        variant: "destructive",
+      });
+      console.error("Signup error:", error);
+      
+    } finally {
+      setLoading(false);
+    }
   };
   
   return (
@@ -97,8 +163,12 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
                       required
                     />
                   </div>
-                  <Button type="submit" className="w-full bg-travel-500 hover:bg-travel-600">
-                    Login
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-travel-500 hover:bg-travel-600"
+                    disabled={loading}
+                  >
+                    {loading ? "Logging in..." : "Login"}
                   </Button>
                 </form>
               </TabsContent>
@@ -141,8 +211,12 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
                       Password must be at least 8 characters long
                     </p>
                   </div>
-                  <Button type="submit" className="w-full bg-travel-500 hover:bg-travel-600">
-                    Create Account
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-travel-500 hover:bg-travel-600"
+                    disabled={loading}
+                  >
+                    {loading ? "Creating Account..." : "Create Account"}
                   </Button>
                 </form>
               </TabsContent>
